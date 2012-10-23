@@ -1,0 +1,102 @@
+﻿@{
+    Layout = "";
+}
+@using Nop.Web.Framework;
+@using Nop.Core;
+@using Nop.Core.Infrastructure;
+@using Nop.Web.Framework.UI;
+@using Telerik.Web.Mvc.UI;
+@using System.Linq;
+@using System.Web.Routing;
+@using Nop.Plugin.Product.Files.Models;
+@model FileModelList
+@Html.ValidationSummary(false)
+@{
+    //register CSS and JS
+    Html.AddCssFileParts(@Url.Content("~/Administration/Content/fileuploader.css"));
+    Html.AddScriptParts(@Url.Content("~/Administration/Scripts/fileuploader.js"));
+
+    //other variables
+    var randomNumber = CommonHelper.GenerateRandomInteger();
+    var clientId = "download" + randomNumber;
+    var downloadService = EngineContext.Current.Resolve<Nop.Services.Media.IDownloadService>();
+    var download = downloadService.GetDownloadById(Model.DownloadId);
+}
+
+@(Html.Telerik().Grid(Model.ProductFiles)
+                        .Name("productfiles-grid")
+                        .DataKeys(keys => keys.Add(x => x.Id).RouteKey("Id"))
+                        .Columns(columns =>
+                        {
+                            columns.Bound(x => x.FileName).Width(200).ReadOnly();
+                            columns.Bound(x => x.Description).Width(400);
+                            columns.Bound(x => x.DisplayOrder).Width(70);
+                            columns.Command(commands =>
+                            {
+                                commands.Edit();
+                                commands.Delete();
+                            })
+                            .Width(150);
+                        })
+                        .Editable(x =>
+                        {
+                            x.Mode(GridEditMode.InLine);
+                        })
+                        .DataBinding(dataBinding =>
+                        {
+                            dataBinding.Ajax()
+                                .Select("ProductFilesList", "Download", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Product.Files.Controllers" }, { "area", "" } })
+                                .Update("ProductFilesUpdate", "Download", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Product.Files.Controllers" }, { "area", "" } })
+                                .Delete("ProductFilesDelete", "Download", new RouteValueDictionary() { { "Namespaces", "Nop.Plugin.Product.Files.Controllers" }, { "area", "" } });
+                        })
+                        .EnableCustomBinding(true))
+
+<table class="adminContent" border="1" style="width: 500px">
+    <tr id="pnlDownloadFile@(randomNumber)">
+        <td class="adminTitle">
+            @T("Admin.Download.UploadFile"):
+        </td>
+        <td class="adminData">
+            <div>
+                <div id="@clientId">
+                    <noscript>
+                        <p>
+                            Please enable JavaScript to use file uploader.
+                        </p>
+                    </noscript>
+                </div>
+                <script type="text/javascript">
+                    $(function () {
+                        $(function () {
+                            var uploader@(clientId) = new qq.FileUploader({
+                                            element: document.getElementById('@clientId'),
+                                            action: '@(Url.Content("~/Plugins/ProductFiles/AsyncUpload"))',
+                                            params: { "productId": @Model.ProductId },
+                                            onComplete: function (id, fileName, responseJSON) {
+                                                $("#@(clientId + "downloadurl")").html("<a href='" + responseJSON.downloadUrl + "'>@T("Admin.Download.DownloadUploadedFile")</a>");
+                                                $("#@(clientId + "value") input").val(responseJSON.downloadId);
+                                                $("#@(clientId + "remove")").show();
+                                                $(".t-grid .t-refresh").trigger('click');
+                                            },
+                                            strings: {
+                                                upload: "@T("Common.FileUploader.Upload")",
+                                                drop: "@T("Common.FileUploader.DropFiles")",
+                                                cancel: "@T("Common.FileUploader.Cancel")",
+                                                failed: "@T("Common.FileUploader.Failed")"
+                                            }
+                                        });
+
+                                        $("#@(clientId + "remove")").click(function (e) {
+                                            $("#@(clientId + "downloadurl")").html("");
+                                            $("#@(clientId + "value") input").val(0);
+                                            $(this).hide();
+                                        });
+
+                                    });
+                                });
+                </script>
+            </div>
+        </td>
+    </tr>
+</table>
+

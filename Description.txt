@@ -1,0 +1,8 @@
+﻿Group: Product
+FriendlyName: Product Files
+SystemName: Product.Files
+Version: 1.00
+SupportedVersions: 2.30,2.40,2.50,2.60,2.65,2.70
+Author: Johan Lasses
+DisplayOrder: 1
+FileName: Nop.Plugin.Product.Files.dll

@@ -1,0 +1,17 @@
+﻿@model Nop.Plugin.Product.Files.Models.FileModelList
+@{
+    Layout = "";
+}
+@using Nop.Web.Framework;
+@if(Model.ProductFiles.Count > 0){
+<div class="product-sheet">
+    <h1>@T("Plugins.ProductFiles.BlockHeading")</h1>
+    <ul>
+         @for (int i = 0; i < Model.ProductFiles.Count; i++)
+        {
+            var file = Model.ProductFiles[i];
+            <li><a href="@(Url.Action("DownloadFile", "Download", new { downloadId = file.DownloadId }))" title="@file.Description">@file.FileName</a></li>
+        }
+    </ul>
+</div>
+}
