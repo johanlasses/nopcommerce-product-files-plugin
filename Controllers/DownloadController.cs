@@ -16,7 +16,6 @@ using Telerik.Web.Mvc;
 
 namespace Nop.Plugin.Product.Files.Controllers
 {
-    [AdminAuthorize]
     public partial class DownloadController : Controller
     {
         private readonly IProductFileServices _productFileService;
